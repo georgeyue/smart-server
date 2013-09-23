@@ -15,6 +15,9 @@
   "bugs": {
     "url": "https://github.com/georgeyue/smart-server/issues"
   },
+  "bin": {
+    "smart-server": "./bin/smart-server"
+  },
   "dependencies": {
     "underscore": "~1.5.2",
     "optimist": "~0.6.0",

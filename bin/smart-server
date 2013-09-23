@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+
+var server = require("../index");
+
+var optimist = require("optimist")
+      .usage('Usage: node $0')
+      .default({ d: 'templates'})
+      .default({ p: 8888 })
+      .describe('h', 'display the help message')
+      .describe('d', 'auto discovery this directory')
+      .describe('p', 'port for server')
+      .alias('h', 'help')
+      .alias('d', 'directory')
+      .alias('p', 'port'),
+    argv = optimist.argv;
+
+server.init({
+    port: argv.port,
+    tplDir: argv.directory
+});
+server.start();
+console.log("server started on port: ", argv.port);

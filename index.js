@@ -19,6 +19,7 @@ exports.init = function (opt) {
 
   options = opt;
   var tplDir = path.resolve(opt.tplDir);
+  options.tplDir = tplDir;
 
   routeMap = {
     "urlMatch": {
