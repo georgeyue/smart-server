@@ -2,50 +2,35 @@ var http = require('http'),
     _ = require("underscore"),
     path = require("path")
     util = require('util'),
-    find = require("shelljs").find,
+    find = require("shelljs").ls,
     runViaCli = require.main === module,
-    tplDir = "",
+    options = {},
     optimist = null,
     fs = require("fs");
 
 var routeMap = {};
-
-if (runViaCli) {
-  optimist = require("optimist")
-      .usage('Usage: node $0 --conf=default.json')
-      .demand('d')
-      .describe('h', 'display the help message')
-      .describe('d', 'directory to start discovery')
-      .alias('h', 'help')
-      .alias('d', 'dir');
-  argv = optimist.argv;
-  tplDir = path.resolve(argv.d);
-}
-
-
 
 /**
  * @param {Object} options
  * @property options.port {String}
  * @property options.tplDir {String}
  */
-function init(options) {
+exports.init = function (opt) {
 
-  tplDir = options.tplDir;
+  options = opt;
+  var tplDir = path.resolve(opt.tplDir);
 
   routeMap = {
     "urlMatch": {
       regex: /^\/([\-0-9a-zA-Z]+)$/,
       handler: function (req, resp, routeName, matched) {
         var label = matched[1];
-        var filepath = tplDir + label + "/";
+        var filepath = path.join(tplDir, label);
 
         // check if view dir exists
         if (fs.existsSync(filepath)) {
-          console.log("[" + label + "] exists");
           app_handler(req, resp, routeName, matched, filepath);
         } else {
-          console.log("[" + label + "] does not exists");
           notfound_handler(req, resp, routeName, matched, filepath);
         }
       }
@@ -60,7 +45,8 @@ var log = function log() {
   }
 };
 
-exports.createServer = function(port, tplDir) {
+exports.start = function() {
+  var port = options.port;
   var s = http.createServer(function (req, res) {
     var found = false,
         routeName = "",
@@ -91,7 +77,7 @@ exports.createServer = function(port, tplDir) {
     routeMap[routeName].handler(req, res, routeName, matched);
   });
 
-  s.port = port
+  s.port = port;
   s.url = 'http://localhost:' + port;
 
   s.listen(s.port, function() {
@@ -101,43 +87,74 @@ exports.createServer = function(port, tplDir) {
   return s;
 };
 
-if (runViaCli) {
-  exports.createServer(8888);
-}
-
-function notfound_handler (req, resp, routeName, matched, tplDir) {
+function notfound_handler (req, resp, routeName, matched) {
   resp.writeHead(404);
   resp.end();
 }
 
-function app_handler (req, resp, routeName, matched, tplDir) {
-  var label = matched[1];
-  var tmp = {
-    attributes: {
-      pageTitle: "",
-      htmlTag: ""
-    },
-    metaData: {
-      metaTag: []
-    },
-    content: {
-      html: loadFile(tplDir, "content.html"),
-      modal: ""
-    },
-    js: {
-      inPage: loadFile(tplDir, "js-inline.html"),
-      src: _.compact( loadFile(tplDir, "js-src.html").split("\n") )
-    },
-    css: {
-      inPage: loadFile(tplDir, "css-inline.html"),
-      src: _.compact( loadFile(tplDir, "css-src.html").split("\n") )
+var get_file_list = exports.get_file_list = function (tplDir, label) {
+  var filelist = find( '-R', path.join(tplDir, label) ).filter(function(file){ return file.match(/\.[a-zA-Z]+$/);});
+
+  return _.map(filelist, function(item) {
+    return item.split(path.sep);
+  });
+};
+
+
+/**
+ * @param {Object} obj
+ * @param {Array} path
+ * @return {Object}
+ *
+ * original obj = {}
+ * [ 'a', 'b', 'c' ] => {a:{b:{c:{}}}}
+ * [ 'a' ] => {}
+ *
+ * original obj = {a:{b:{c:'a'}}}
+ * [ 'a', 'b', 'b' ] => {a:{b:{c:'a',b: {}}}}
+ */
+var create_object = exports.create_object = function (obj, path) {
+
+  if (path.length && path.length == 1) {
+    obj[path[0]] = obj[path[0]] ? obj[path[0]] : {};
+    return obj[path[0]];
+  }
+
+  var marker = obj;
+  var len = path.length;
+
+  for (var i=0; i<len; i++) {
+    if (!marker[path[i]]) {
+      marker[path[i]] = {};
     }
-  };
+    marker = marker[path[i]];
+  }
+
+  return marker;
+};
+
+function app_handler (req, resp, routeName, matched) {
+  var label = matched[1];
+  var filelist = get_file_list(options.tplDir, label);
+
+  var obj = {};
+
+  for (var i=0; i<filelist.length; i++) {
+    if (filelist[i].length) {
+      var filename = filelist[i].splice(filelist[i].length-1)[0];
+      var marker = create_object(obj, filelist[i]);
+      var fullpath = path.join(options.tplDir, label, filelist[i].join(path.sep), filename);
+      var content = loadFile(fullpath);
+
+      marker[filename.split('.')[0]] = content;
+    }
+  }
 
   resp.writeHead(200, {'Content-Type':'application/json'});
-  resp.end(JSON.stringify(tmp));
+  resp.end(JSON.stringify(obj));
 }
 
 function loadFile (filename) {
-  return fs.readFileSync(filename, "utf8").toString();
+  var content =  fs.readFileSync(filename, "utf8").toString();
+  return _.compact(content.split("\n")).join("");
 }
