@@ -157,5 +157,5 @@ function app_handler (req, resp, routeName, matched) {
 
 function loadFile (filename) {
   var content =  fs.readFileSync(filename, "utf8").toString();
-  return _.compact(content.split("\n")).join("");
+  return content.trim();
 }
