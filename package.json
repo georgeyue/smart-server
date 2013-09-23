@@ -1,0 +1,28 @@
+{
+  "name": "smart-server",
+  "version": "0.0.0",
+  "description": "smart-server ============",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/georgeyue/smart-server"
+  },
+  "author": "theothergeorge@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/georgeyue/smart-server/issues"
+  },
+  "dependencies": {
+    "underscore": "~1.5.2",
+    "optimist": "~0.6.0",
+    "shelljs": "~0.2.6",
+    "mocha": "~1.12.0",
+    "request": "~2.26.0",
+    "sinon": "~1.7.3",
+    "winston": "~0.7.2",
+    "chai": "~1.7.2"
+  }
+}
