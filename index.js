@@ -21,22 +21,26 @@ exports.init = function (opt) {
   var tplDir = path.resolve(opt.tplDir);
   options.tplDir = tplDir;
 
-  routeMap = {
-    "urlMatch": {
-      regex: /^\/([\-0-9a-zA-Z]+)$/,
-      handler: function (req, resp, routeName, matched) {
-        var label = matched[1];
-        var filepath = path.join(tplDir, label);
+  if (opt.routeMap) {
+    routeMap = opt.routeMap;
+  } else {
+    routeMap = {
+      "urlMatch": {
+        regex: /^\/([\-0-9a-zA-Z]+)$/,
+        handler: function (req, resp, routeName, matched) {
+          var label = matched[1];
+          var filepath = path.join(tplDir, label);
 
-        // check if view dir exists
-        if (fs.existsSync(filepath)) {
-          app_handler(req, resp, routeName, matched, filepath);
-        } else {
-          notfound_handler(req, resp, routeName, matched, filepath);
+          // check if view dir exists
+          if (fs.existsSync(filepath)) {
+            app_handler(req, resp, routeName, matched, filepath);
+          } else {
+            notfound_handler(req, resp, routeName, matched, filepath);
+          }
         }
       }
-    }
-  };
+    };
+  }
 
 };
 
