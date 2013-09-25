@@ -2,12 +2,13 @@ var sinon = require('sinon'),
     expect = require('chai').expect,
     server = require('../index'),
     util   = require('util'),
+    path = require("path"),
     request = require('request');
 
 
 server.init({
   port: 8888,
-  tplDir: 'templates'
+  tplDir: path.join(__dirname, '../templates')
 })
 server.start();
 
