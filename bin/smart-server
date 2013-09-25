@@ -16,7 +16,22 @@ var optimist = require("optimist")
 
 server.init({
     port: argv.port,
-    tplDir: argv.directory
+    tplDir: argv.directory,
+    routeMap: {
+        "lame" : {
+            regex: /george$/,
+            handler: function (req, resp, routeName, matched) {
+                resp.setHeader('Set-Cookie',"name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+                resp.end('hi');
+            }
+        }
+    }
 });
-server.start();
+var s = server.start();
+
+process.on('SIGINT', function() {
+    server.closeAll();
+    process.exit();
+});
+
 console.log("server started on port: ", argv.port);
