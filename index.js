@@ -9,6 +9,7 @@ var http = require('http'),
     fs = require("fs");
 
 var routeMap = {};
+var servers = [];
 
 /**
  * @param {Object} options
@@ -51,6 +52,7 @@ var log = function log() {
 };
 
 exports.start = function() {
+  var sockets = [];
   var port = options.port;
   var s = http.createServer(function (req, res) {
     var found = false,
@@ -77,9 +79,27 @@ exports.start = function() {
     }
   });
 
+  servers.push(s);
+
   s.on('urlMatched', function(req, res, routeName, matched) {
     log('found match: ', matched[0]);
     routeMap[routeName].handler(req, res, routeName, matched);
+  });
+
+  // use this to track sockets
+  s.on("connection", function(socket){
+    sockets.push(socket);
+    socket.on('close', function(){
+      sockets.splice(sockets.indexOf(socket), 1);
+    });
+  });
+
+  // cleanup sockets to properly shutdown server
+  s.on("close", function() {
+    log("cleaning up sockets");
+    for (var i; i<sockets.length; i++) {
+      sockets[i].destroy();
+    }
   });
 
   s.port = port;
@@ -90,6 +110,13 @@ exports.start = function() {
   });
 
   return s;
+};
+
+exports.closeAll = function() {
+  for (var i=0; i<servers.length; i++) {
+    servers[i].close();
+  }
+  log("server terminated. Good bye");
 };
 
 function notfound_handler (req, resp, routeName, matched) {
