@@ -10,7 +10,7 @@ server.init({
   port: 8888,
   tplDir: path.join(__dirname, '../templates')
 })
-server.start();
+var s = server.start();
 
 describe("create_object test", function () {
 
@@ -54,4 +54,9 @@ describe("simple URL GET", function () {
       done();
     });
   });
+});
+
+
+after(function(){
+  server.closeAll();
 });
