@@ -27,7 +27,7 @@ exports.init = function (opt) {
   } else {
     routeMap = {
       "urlMatch": {
-        regex: /^\/([\-0-9a-zA-Z]+)$/,
+        regex: /^\/([\-0-9a-zA-Z_]+)$/,
         handler: function (req, resp, routeName, matched) {
           var label = matched[1];
           var filepath = path.join(tplDir, label);
