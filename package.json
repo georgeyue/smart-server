@@ -23,7 +23,7 @@
     "optimist": "~0.6.0",
     "shelljs": "~0.8.5",
     "mocha": "~1.12.0",
-    "request": "~2.26.0",
+    "request": ">=2.68.0",
     "sinon": "~1.7.3",
     "winston": "~0.7.2",
     "chai": "~1.7.2"
