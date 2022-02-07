@@ -19,7 +19,7 @@
     "smart-server": "./bin/smart-server"
   },
   "dependencies": {
-    "underscore": "~1.5.2",
+    "underscore": ">=1.12.1",
     "optimist": "~0.6.0",
     "shelljs": "~0.8.5",
     "mocha": "~1.12.0",
